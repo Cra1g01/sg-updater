@@ -13,19 +13,19 @@ type SecurityGroupsConfig struct {
 }
 
 func (sgs *SecurityGroupsConfig) GroupByRegion() map[string][]*sgconnection.SecurityGroup {
-    m := make(map[string][]*sgconnection.SecurityGroup)
-    for _, sg := range sgs.SecurityGroups {
-        sg := sg
-        _, exists := m[sg.Region]
-        if exists {
-            m[sg.Region] = append(m[sg.Region], &sg)
-        } else {
-            m[sg.Region] = []*sgconnection.SecurityGroup{
-                &sg,
-            }
-        }
-    }
-    return m
+	m := make(map[string][]*sgconnection.SecurityGroup)
+	for _, sg := range sgs.SecurityGroups {
+		sg := sg
+		_, exists := m[sg.Region]
+		if exists {
+			m[sg.Region] = append(m[sg.Region], &sg)
+		} else {
+			m[sg.Region] = []*sgconnection.SecurityGroup{
+				&sg,
+			}
+		}
+	}
+	return m
 }
 
 var Account AccountConfig = AccountConfig{
@@ -33,6 +33,8 @@ var Account AccountConfig = AccountConfig{
 	AccessKey:    "AccountAccessKey",
 	AccessSecret: "AccountAccessSecret",
 }
+
+var IpURL string = "https://checkip.amazonaws.com"
 
 var SecurityGroups SecurityGroupsConfig = SecurityGroupsConfig{
 	SecurityGroups: []sgconnection.SecurityGroup{
@@ -42,4 +44,3 @@ var SecurityGroups SecurityGroupsConfig = SecurityGroupsConfig{
 		},
 	},
 }
-
