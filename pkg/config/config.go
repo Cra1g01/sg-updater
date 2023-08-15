@@ -29,7 +29,6 @@ func (sgs *SecurityGroupsConfig) GroupByRegion() map[string][]*sgconnection.Secu
 }
 
 var Account AccountConfig = AccountConfig{
-	AccountId:    "AccountID",
 	AccessKey:    "AccountAccessKey",
 	AccessSecret: "AccountAccessSecret",
 }
