@@ -9,6 +9,6 @@ type IpRule struct {
 	Ip          string
 	Description string
 	Protocol    string
-	FromPort    int64
-	ToPort      int64
+	FromPort    int32
+	ToPort      int32
 }

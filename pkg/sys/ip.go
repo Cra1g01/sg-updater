@@ -3,12 +3,12 @@ package sys
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"strings"
 
-	"github.com/Cra1g01/sg-updater/pkg/config"
+    "github.com/Cra1g01/sg-updater/pkg/config"
 )
 
 func GetIpAddr() string {
@@ -27,11 +27,11 @@ func ipRequest(url string) (string, error) {
 	if res.StatusCode != 200 {
 		return "", errors.New(fmt.Sprintf("Error: status code %d", res.StatusCode))
 	}
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
-        return "", err
+		return "", err
 	}
 	sb := string(body)
-    trimmedSb := strings.TrimSpace(sb)
+	trimmedSb := strings.TrimSpace(sb)
 	return trimmedSb, nil
 }

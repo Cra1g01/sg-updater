@@ -1,14 +1,15 @@
 package main
 
 import (
+	"context"
+	"log"
 	// "fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
 
-	"github.com/Cra1g01/sg-updater/pkg/config"
+	ac "github.com/Cra1g01/sg-updater/pkg/config"
 	"github.com/Cra1g01/sg-updater/pkg/sgconnection"
 	"github.com/Cra1g01/sg-updater/pkg/sys"
 )
@@ -20,16 +21,20 @@ func main() {
 }
 
 func update(username string, ipAddr string) {
-	sgs := config.SecurityGroups
+	sgs := ac.SecurityGroups
 	groups := sgs.GroupByRegion()
 	for region, val := range groups {
-		sess := session.Must(session.NewSession(&aws.Config{
-			Region:      aws.String(region),
-			Credentials: credentials.NewStaticCredentials(config.Account.AccessKey, config.Account.AccessSecret, ""),
-		}))
-		svc := ec2.New(sess)
+		creds := credentials.NewStaticCredentialsProvider(ac.Account.AccessKey, ac.Account.AccessSecret, "")
+		cfg, err := config.LoadDefaultConfig(context.TODO(),
+			config.WithRegion(region),
+			config.WithCredentialsProvider(creds),
+		)
+		if err != nil {
+			log.Fatalf("Error: %v", err)
+		}
+		client := ec2.NewFromConfig(cfg)
 		for _, sg := range val {
-			rules := sg.GetIngressRules(svc)
+			rules := sg.GetIngressRules(client)
 			for _, rule := range rules {
 				if rule.Description == username && rule.Ip != ipAddr {
 					newRule := sgconnection.IpRule{
@@ -37,12 +42,11 @@ func update(username string, ipAddr string) {
 						Protocol:    rule.Protocol,
 						Description: rule.Description,
 					}
-					sg.AuthorizeIngress(svc, newRule)
-					sg.RevokeIngress(svc, rule)
+					sg.AuthorizeIngress(client, newRule)
+					sg.RevokeIngress(client, rule)
 					break
 				}
 			}
 		}
 	}
 }
-

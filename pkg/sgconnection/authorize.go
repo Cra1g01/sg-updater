@@ -1,23 +1,24 @@
 package sgconnection
 
 import (
+	"context"
 	"fmt"
 	"log"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 )
 
-func (sg *SecurityGroup) AuthorizeIngress(svc *ec2.EC2, ipRule IpRule) {
+func (sg *SecurityGroup) AuthorizeIngress(client *ec2.Client, ipRule IpRule) {
 	input := &ec2.AuthorizeSecurityGroupIngressInput{
 		GroupId: aws.String(sg.SgId),
-		IpPermissions: []*ec2.IpPermission{
+		IpPermissions: []types.IpPermission{
 			{
 				// FromPort:   aws.Int64(22),
 				// ToPort: aws.Int64(22),
 				IpProtocol: aws.String(ipRule.Protocol),
-				IpRanges: []*ec2.IpRange{
+				IpRanges: []types.IpRange{
 					{
 						CidrIp:      aws.String(ipRule.Ip),
 						Description: aws.String(ipRule.Description),
@@ -27,17 +28,9 @@ func (sg *SecurityGroup) AuthorizeIngress(svc *ec2.EC2, ipRule IpRule) {
 		},
 	}
 
-	result, err := svc.AuthorizeSecurityGroupIngress(input)
+	result, err := client.AuthorizeSecurityGroupIngress(context.TODO(), input)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			default:
-				log.Fatalln(aerr.Error())
-			}
-		} else {
-			log.Fatalln(aerr.Error())
-		}
-		return
+        log.Fatalln(err)
 	}
 
 	fmt.Println(result)

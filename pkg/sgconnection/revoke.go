@@ -1,21 +1,22 @@
 package sgconnection
 
 import (
+	"context"
 	"fmt"
 	"log"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 )
 
-func (sg *SecurityGroup) RevokeIngress(svc *ec2.EC2, ipRule IpRule) {
+func (sg *SecurityGroup) RevokeIngress(client *ec2.Client, ipRule IpRule) {
 	input := &ec2.RevokeSecurityGroupIngressInput{
 		GroupId: aws.String(sg.SgId),
-		IpPermissions: []*ec2.IpPermission{
+		IpPermissions: []types.IpPermission{
 			{
 				IpProtocol: aws.String(ipRule.Protocol),
-				IpRanges: []*ec2.IpRange{
+				IpRanges: []types.IpRange{
 					{
 						CidrIp:      aws.String(ipRule.Ip),
 						Description: aws.String(ipRule.Description),
@@ -25,17 +26,9 @@ func (sg *SecurityGroup) RevokeIngress(svc *ec2.EC2, ipRule IpRule) {
 		},
 	}
 
-	result, err := svc.RevokeSecurityGroupIngress(input)
+	result, err := client.RevokeSecurityGroupIngress(context.TODO(), input)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			default:
-				log.Fatalln(err.Error())
-			}
-		} else {
-			log.Fatalln(err.Error())
-		}
-		return
+        log.Fatalln(err)
 	}
 
 	fmt.Println(result)
